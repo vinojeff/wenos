@@ -1,0 +1,22 @@
+[package]
+name = "wenos"
+version = "0.1.0"
+edition = "2024"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[features]
+default = []
+qemu_x86_64 = []
+qemu_aarch64 = []
+qemu_riscv64 = []
+
+[[bin]]
+name = "kernel"
+path = "src/main.rs"
+
+[dependencies]
