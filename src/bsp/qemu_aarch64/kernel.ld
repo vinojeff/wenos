@@ -27,6 +27,12 @@ SECTIONS
         KEEP(*(.text))
         KEEP(*(.text.*))
         *(.text.startup)
+        /* stack use*/
+        . = ALIGN(16);
+            PROVIDE(_stack_start = .);
+        . += 4K;
+        . = ALIGN(16);
+        PROVIDE(_stack_top = .);
     } :text
     .rodata : { *(.rodata .rodata.*) } :rodata
     .data : { *(.data .data.*) } :data

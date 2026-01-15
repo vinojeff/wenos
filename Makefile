@@ -64,14 +64,14 @@ RUSTFLAGS := -C link-arg=-T$(LINKER_SCRIPT)  -C link-arg=-nostdlib
 all: $(TARGET)
 
 # QEMU 相关配置
-QEMU_FLAGS := -nographic -machine $(QEMU_MACHINE) $(QEMU_EXTRA_FLAGS) -cpu cortex-a57
+QEMU_FLAGS := -machine $(QEMU_MACHINE) $(QEMU_EXTRA_FLAGS) -cpu cortex-a57 -m 1G
 QEMU_KERNEL := $(RUST_TARGET_DIR)/kernel.bin
 QEMU_DEBUG_FLAGS := -s -S
 
 # 运行内核
 run: $(TARGET)
 	@echo "🚀 启动 QEMU..."
-	$(QEMU) $(QEMU_FLAGS) -kernel $(RUST_TARGET_DIR)/kernel
+	$(QEMU) $(QEMU_FLAGS) -nographic -kernel $(RUST_TARGET_DIR)/kernel
 
 # 调试内核(启动 QEMU 并等待 GDB 连接)
 debug: $(TARGET)
