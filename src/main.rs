@@ -5,43 +5,24 @@ mod bsp;
 mod cpu;
 mod panic_waiter;
 
-// QEMU aarch64 virt UART 基地址
-const UART0_DR: u64 = 0x09000000;
-
-/// 串口输出单个字符
-pub fn uart_putc(c: u8) {
-    unsafe {
-        let v = c as u64;
-        core::arch::asm!(
-            "strb {0:w}, [{1}]",
-            in(reg) v,
-            in(reg) UART0_DR,
-        );
-    }
-}
-
-/// 串口输出字符串
-pub fn uart_puts(s: &str) {
-    for byte in s.bytes() {
-        uart_putc(byte);
-    }
-}
-
 #[unsafe(no_mangle)]
 pub extern "C" fn rust_main() -> ! {
     #[cfg(target_arch = "aarch64")]
     {
-        uart_puts("\r\n");
-        uart_puts("Hello from WeNoS on QEMU aarch64!\r\n");
-        uart_puts("UART serial driver initialized.\r\n");
+        use crate::bsp::qemu_aarch64::serial::Pl011Uart;
+        use crate::bsp::qemu_aarch64::serial::simple_uart_puts;
 
-        // 测试单个字符输出
-        uart_putc(b'A');
-        uart_putc(b'B');
-        uart_putc(b'C');
-        uart_puts("\r\n");
+        // 先用简单串口输出确认系统工作
+        simple_uart_puts("\r\n");
+        simple_uart_puts("Hello from WeNoS on QEMU aarch64!\r\n");
+        simple_uart_puts("UART serial driver initialized.\r\n");
+        simple_uart_puts("\r\n");
 
-        uart_puts("Kernel is running...\r\n");
+        // 测试 PL011Uart
+        let mut uart = unsafe { Pl011Uart::new(0x0900_0000) };
+        uart.init(24_000_000, 115200);
+
+        uart.write_str("Kernel is running...\r\n");
     }
 
     loop {

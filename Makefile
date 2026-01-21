@@ -76,14 +76,20 @@ run: $(TARGET)
 # 调试内核(启动 QEMU 并等待 GDB 连接)
 debug: $(TARGET)
 	@echo "🐛 启动 QEMU 调试模式..."
+	@echo "   QEMU 将在端口 1234 等待 GDB 连接"
 	@echo "   在另一个终端运行: gdb $(RUST_TARGET_DIR)/kernel"
-	@echo "   然后在 gdb 中运行: target remote :1234"
-	$(QEMU) $(QEMU_FLAGS) $(QEMU_DEBUG_FLAGS) -kernel $(RUST_TARGET_DIR)/kernel
+	$(QEMU) $(QEMU_FLAGS) $(QEMU_DEBUG_FLAGS) -nographic -kernel $(RUST_TARGET_DIR)/kernel
 
 # GDB 连接命令
 gdb:
 	@echo "📌 连接到 QEMU GDB 服务器..."
-	$(CROSS_PREFIX)gdb $(RUST_TARGET_DIR)/kernel -ex "target remote :1234" -ex "break _start"
+	@echo "   请先运行 'make debug' 启动 QEMU"
+	@echo "   如果已启动，现在连接..."
+	@if [ -z "$(CROSS_PREFIX)" ]; then \
+		gdb-multiarch --quiet $(RUST_TARGET_DIR)/kernel -ex "target remote :1234" -ex "break _start" -ex "continue"; \
+	else \
+		$(CROSS_PREFIX)gdb --quiet $(RUST_TARGET_DIR)/kernel -ex "target remote :1234" -ex "break _start" -ex "continue"; \
+	fi
 
 # 构建目标：使用 Cargo 编译 Rust 代码
 # 这里使用 `--target` 指定目标三元组（如 thumbv7em-none-eabihf），
